@@ -1,28 +1,40 @@
-# Author: Eolink-liujian
-# Date: 2025-07-19
-# Description: Dockerfile for XPack
-FROM  python:3.12.11-alpine3.22
+# LayerToll all-in-one image: nginx + Next.js frontend + admin service + agent gateway.
+# Based on the upstream XPack Dockerfile (Apache-2.0); modified to build the
+# frontend in-image and to use Debian (wheels for the web3/x402 stack).
 
-RUN apk add nodejs=~22 npm uv nginx
-# ENV TZ=Asia/Shanghai
-# RUN ln -sf /usr/share/zoneinfo/${TZ} /etc/localtime \
-#     && echo "Asia/Shanghai" > /etc/timezone
+# ---------- frontend build ----------
+FROM node:22-bookworm-slim AS frontend
+WORKDIR /build
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm install -g pnpm@10
+COPY frontend/package.json ./
+RUN pnpm install --no-frozen-lockfile
+COPY frontend/ ./
+RUN pnpm build \
+ && mkdir -p /out/.next \
+ && cp -R .next/standalone/. /out/ \
+ && cp -R .next/static /out/.next/ \
+ && cp -R public /out/
 
-ARG APP XPack-MCP-Market
-ARG VERSION latest
+# ---------- runtime ----------
+FROM python:3.12-slim-bookworm
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends nginx curl \
+ && rm -rf /var/lib/apt/lists/* \
+ && rm -f /etc/nginx/sites-enabled/default
+COPY --from=frontend /usr/local/bin/node /usr/local/bin/node
 
-RUN mkdir -p /$APP
+WORKDIR /app
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-WORKDIR /$APP
-COPY requirements.txt /$APP/requirements.txt
+COPY scripts/resource/default.conf /etc/nginx/conf.d/default.conf
+COPY scripts/resource/start.sh scripts/resource/init_db.py ./
+COPY scripts/resource/sql ./sql
+COPY pyproject.toml ./
+COPY services ./services
+COPY --from=frontend /out ./frontend
 
-RUN uv venv && source .venv/bin/activate && uv pip install -r requirements.txt
-RUN echo $VERSION > .version
-
-COPY scripts/resource/default.conf /etc/nginx/http.d/default.conf
-COPY frontend/out/ /$APP/frontend
-COPY scripts/resource/ /$APP
-COPY pyproject.toml /$APP/pyproject.toml
-COPY services/ /$APP/services
-
-CMD [ "./start.sh" ]
+EXPOSE 80
+HEALTHCHECK --interval=20s --timeout=5s --start-period=60s CMD curl -fsS http://127.0.0.1:8002/health || exit 1
+CMD ["sh", "./start.sh"]

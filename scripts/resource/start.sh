@@ -1,49 +1,32 @@
-#! /bin/sh
+#!/bin/sh
+# LayerToll container entrypoint (modified from the upstream XPack start.sh, Apache-2.0).
+# Configuration comes from environment variables (docker compose env_file); no .env is copied.
+set -e
 
-set -e 
+LOG_DIR="$(pwd)/logs"
+mkdir -p "${LOG_DIR}"
 
-# 判断有没有激活uv环境
-check_uv_env() {
-    # 检查 uv 命令是否可用
-    if ! command -v uv &> /dev/null; then
-        echo "Error: uv command not found"
-        echo "Please install uv using 'pip install uv'"
-        exit 1
+# Wait for MySQL, then apply versioned migrations (init.sql + version-*.sql).
+# Never start the services on top of a failed migration.
+migrated=0
+for i in $(seq 1 20); do
+    if python ./init_db.py; then
+        migrated=1
+        break
     fi
-    source .venv/bin/activate
-    echo "UV environment is properly activated"
-}
-
-CURRENT_DIR=$(dirname "$(readlink -f "$0")")
-LOG_DIR=${CURRENT_DIR}/logs
-if [ -d ${LOG_DIR} ]; then
-    echo "logs directory exists"
-else
-    echo "logs directory not exists, create it"
-    echo "LOG_DIR: ${LOG_DIR}"
-    mkdir -p ${LOG_DIR}
+    echo "Database init/migration failed (attempt $i), retrying in 3s..."
+    sleep 3
+done
+if [ "$migrated" != "1" ]; then
+    echo "Database migration failed; refusing to start." >&2
+    exit 1
 fi
 
-# 执行环境检查
-check_uv_env
+nohup uvicorn services.admin_service.main:app --host 0.0.0.0 --port 8001 --timeout-graceful-shutdown 2 > "${LOG_DIR}/admin_service.log" 2>&1 &
+nohup uvicorn services.api_service.main:app --host 0.0.0.0 --port 8002 --timeout-graceful-shutdown 2 > "${LOG_DIR}/api_service.log" 2>&1 &
+(cd frontend && HOSTNAME=127.0.0.1 PORT=3000 nohup node server.js > "${LOG_DIR}/frontend.log" 2>&1 &)
 
-if [ -f .env.example ]; then
-   cp .env.example .env
-fi
-
-# 初始化数据库
-python ./init_db.py
-
-nohup uvicorn services.admin_service.main:app --host 0.0.0.0 --port 8001 --timeout-graceful-shutdown 2 --timeout-keep-alive 1 > ${LOG_DIR}/admin_service.log 2>&1 &
-
-sleep 5s
-
-nohup uvicorn services.api_service.main:app --host 0.0.0.0 --port 8002 --timeout-graceful-shutdown 2 --timeout-keep-alive 1 > ${LOG_DIR}/api_service.log 2>&1 &
-HOSTNAME=""
-cd frontend/ && nohup node server.js> ${LOG_DIR}//frontend.log 2>&1 &
-
-sleep 2s
-
+sleep 2
 nginx
 
-tail -F ${LOG_DIR}/*.log
+tail -F "${LOG_DIR}"/*.log
