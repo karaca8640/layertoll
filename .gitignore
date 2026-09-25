@@ -42,3 +42,6 @@ local_settings.py
 /.secrets
 /uploads/
 /.vercel/
+
+# demo video recordings and saved login session
+/video/
