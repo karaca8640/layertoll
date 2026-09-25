@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
@@ -12,7 +13,9 @@ import UserManagement from "@/components/user-management/UserManagement";
 import RevenueManagement from "@/components/revenue-management/RevenueManagement";
 import ConsoleSidebar from "./Sidebar";
 import { withComponentInjection } from "@/shared/hooks/useComponentInjection";
-import { Boxes, DollarSign, Home, ServerIcon, Users } from "lucide-react";
+import { Boxes, DollarSign, Home, Receipt, ServerIcon, Users, Zap } from "lucide-react";
+import AgentServices from "@/components/agent-services/AgentServices";
+import SettlementDashboard from "@/components/agent-services/SettlementDashboard";
 import OnboardingWelcome, { REQUIRED_TASK_KEYS } from "./OnboardingWelcome";
 import ConsoleStats from "./ConsoleStats";
 import SystemSettingsModal from "./SystemSettingsModal";
@@ -37,13 +40,20 @@ const ConsoleContent: React.FC = () => {
     const tabFromUrl = searchParams.get("tab") as TabKey;
     if (
       tabFromUrl &&
-      ["mcp-services", "user-management", "revenue-management", "resource-group"].includes(
-        tabFromUrl
-      )
+      [
+        "agent-services",
+        "settlement",
+        "console",
+        "mcp-services",
+        "user-management",
+        "revenue-management",
+        "resource-group",
+      ].includes(tabFromUrl)
     ) {
       return tabFromUrl;
     }
-    return TabKey.CONSOLE;
+    // LayerToll: the agent-service flow is the primary console experience
+    return TabKey.AGENT_SERVICES;
   };
 
   const [activeTab, setActiveTab] = useState<TabKey>(getInitialTab);
@@ -58,6 +68,18 @@ const ConsoleContent: React.FC = () => {
   const [settingModalKeyword, setSettingModalKeyword] = useState<string>("");
   const sidebarItems: SidebarItem[] = [
     {
+      key: TabKey.AGENT_SERVICES,
+      icon: <Zap size={18} />,
+      label: "Agent Services",
+      description: "API → paid agent service (x402 on X Layer)",
+    },
+    {
+      key: TabKey.SETTLEMENT,
+      icon: <Receipt size={18} />,
+      label: "Settlement",
+      description: "Agent calls, x402 receipts, revenue",
+    },
+    {
       key: TabKey.CONSOLE,
       icon: <Home size={18} />,
       label: t("Analytics"),
@@ -66,7 +88,7 @@ const ConsoleContent: React.FC = () => {
     {
       key: TabKey.MCP_SERVICES,
       icon: <ServerIcon size={18} />,
-      label: t("MCP"),
+      label: "MCP (advanced)",
       description: t("Manage MCP servers and API tools"),
     },
     {
@@ -84,8 +106,8 @@ const ConsoleContent: React.FC = () => {
     {
       key: TabKey.REVENUE_MANAGEMENT,
       icon: <DollarSign size={18} />,
-      label: t("Revenue"),
-      description: t("View user recharge history"),
+      label: "Legacy billing",
+      description: "Optional prepaid wallet / Stripe recharges (not used by x402 agent calls)",
     },
   ];
 
@@ -101,7 +123,7 @@ const ConsoleContent: React.FC = () => {
     setActiveTab(tab as TabKey);
 
     // update url params
-    if (tab === TabKey.CONSOLE) {
+    if (tab === TabKey.AGENT_SERVICES) {
       // when switch to dashboard, clear all query params, only keep base path
       window.history.pushState({}, "", "/admin/console");
     } else {
@@ -211,6 +233,10 @@ const ConsoleContent: React.FC = () => {
   // render different content based on activeTab
   const renderContent = () => {
     switch (activeTab) {
+      case TabKey.AGENT_SERVICES:
+        return <AgentServices />;
+      case TabKey.SETTLEMENT:
+        return <SettlementDashboard />;
       case TabKey.MCP_SERVICES:
         return <MCPServicesManagement />;
       case TabKey.USER_MANAGEMENT:

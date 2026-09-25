@@ -1,4 +1,8 @@
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 export enum TabKey {
+  // LayerToll (OKX Dev Day 2026)
+  AGENT_SERVICES = "agent-services",
+  SETTLEMENT = "settlement",
   CONSOLE = "console",
   MCP_SERVICES = "mcp-services",
   USER_MANAGEMENT = "user-management",
