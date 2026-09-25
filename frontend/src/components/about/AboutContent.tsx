@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import MarkdownPreview from "@uiw/react-markdown-preview";
@@ -20,19 +21,15 @@ export const AboutContent: React.FC = () => {
           ) : (
             <MarkdownPreview
               source={`
-${t("**XPack** is a lightweight, open-source marketplace framework for MCP (Model Context Protocol) servers.")}
-${t("It allows you to transform any OpenAPI into a monetizable MCP server and build your own API store in just minutes.")}
+**LayerToll** turns an existing business API into a paid AI-agent service.
 
+- Import an OpenAPI spec — every operation becomes an MCP tool with a JSON input schema
+- Choose which tools are free or paid and set a USD price per call
+- Publish OKX AI A2MCP endpoints and an MCP endpoint for any agent
+- Paid calls use HTTP 402 / x402 and settle in USDT0 on X Layer before the API runs
+- Every call, payment and X Layer transaction hash shows up in the seller dashboard
 
-${t("✨ With XPack, you can:")}
-${t("- ✅ **One-click OpenAPI → MCP server config**")}
-${t("- 🧾 **SEO-friendly homepage + mcp server page**")}
-${t("- 💳 **Built-in billing (per-call)**")}
-${t("- 👥 **User account management**")}
-${t("- 🛠 **Support Stripe Payment**")}
-${t("- 🔐 **Support Email & Google OAuth Sign in**")}
-
-${t("Everything is open-source and licensed under **Apache 2.0** — ready for commercial use.")}`}
+LayerToll is built on the open-source [XPack MCP Marketplace](https://github.com/xpack-ai/XPack-MCP-Marketplace) (Apache-2.0).`}
             />
           )}
         </div>

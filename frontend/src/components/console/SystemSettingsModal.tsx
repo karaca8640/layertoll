@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, {
   useCallback,
@@ -177,15 +178,15 @@ const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({
     // Business
     {
       key: SettingModalTab.PAYMENT,
-      label: "Payment",
+      label: "Legacy payments (optional)",
       icon: <CreditCard size={16} />,
-      description: "Configure payment channels",
+      description: "Stripe/Alipay/WeChat recharge for the legacy wallet. Agent calls use x402 on X Layer instead.",
     },
     {
       key: SettingModalTab.XPACK_EXPLORE,
-      label: "XPack Explore",
+      label: "Upstream showcase",
       icon: <Package size={16} />,
-      description: "Explore XPack features and integrations",
+      description: "Optional listing in the upstream XPack showcase",
     },
     // Advanced
     {
@@ -256,7 +257,6 @@ const SystemSettingsModal: React.FC<SystemSettingsModalProps> = ({
         title: "Business",
         items: groupItems([
           SettingModalTab.PAYMENT,
-          SettingModalTab.XPACK_EXPLORE,
         ]),
       },
       {

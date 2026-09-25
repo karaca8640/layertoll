@@ -1,5 +1,5 @@
 {
-  "name": "@xpack/webui",
+  "name": "@layertoll/webui",
   "version": "0.1.0",
   "private": true,
   "exports": {
@@ -10,8 +10,9 @@
     "build": "next build",
     "start": "next start",
     "stop": "lsof -ti:3000 | xargs kill -9 2>/dev/null || echo 'No process running on port 3000'",
-    "lint": "next lint",
-    "check-types": "tsc --noEmit"
+    "lint": "eslint src",
+    "check-types": "tsc --noEmit",
+    "lint:agentpay": "eslint src/components/agent-services src/components/judge src/services/agentPayService.ts src/app/judge src/components/console/Sidebar.tsx"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.3.4",
@@ -54,7 +55,7 @@
     "@types/react-dom": "^18.3.5",
     "@types/three": "^0.177.0",
     "autoprefixer": "^10.4.17",
-    "eslint": "^8.56.0",
+    "eslint": "^9.39.5",
     "eslint-config-next": "16.1.5",
     "postcss": "^8.4.33",
     "tailwindcss": "^3.4.17",

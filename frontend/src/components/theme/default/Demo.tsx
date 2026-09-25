@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { Search } from "lucide-react";
@@ -50,7 +51,7 @@ const DefaultDemo: React.FC = () => {
           {/* Server Card 1 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
             <h3 className="font-medium text-gray-900 mb-1 text-sm">测试1</h3>
-            <p className="text-xs text-gray-600 mb-2">XPack-1</p>
+            <p className="text-xs text-gray-600 mb-2">Demo API</p>
             <div className="flex items-center justify-between">
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                 Beta
@@ -61,8 +62,8 @@ const DefaultDemo: React.FC = () => {
 
           {/* Server Card 2 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <h3 className="font-medium text-gray-900 mb-1 text-sm">XPack</h3>
-            <p className="text-xs text-gray-600 mb-2">XPack-1</p>
+            <h3 className="font-medium text-gray-900 mb-1 text-sm">Web Intelligence API</h3>
+            <p className="text-xs text-gray-600 mb-2">Demo API</p>
             <div className="flex items-center justify-between">
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                 Beta
@@ -73,8 +74,8 @@ const DefaultDemo: React.FC = () => {
 
           {/* Server Card 3 */}
           <div className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-            <h3 className="font-medium text-gray-900 mb-1 text-sm">XPack</h3>
-            <p className="text-xs text-gray-600 mb-2">XPack</p>
+            <h3 className="font-medium text-gray-900 mb-1 text-sm">Web Intelligence API</h3>
+            <p className="text-xs text-gray-600 mb-2">Web Intelligence API</p>
             <div className="flex items-center justify-between">
               <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">
                 Beta

@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { usePlatformConfig } from "@/shared/contexts/PlatformConfigContext";
@@ -18,7 +19,7 @@ export const DynamicLogo: React.FC<DynamicLogoProps> = ({
   alt,
   width,
   height,
-  fallbackSrc = "/static/logo/logo.png",
+  fallbackSrc = "/static/logo/layertoll.svg",
   hideText = false,
 }) => {
   const { platformConfig } = usePlatformConfig();

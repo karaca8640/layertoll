@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { usePlatformConfig } from "@/shared/contexts/PlatformConfigContext";
@@ -48,14 +49,14 @@ export const Footer: React.FC<FooterProps> = ({}) => {
               {/* Powered By */}
               <div className="flex items-center gap-4">
                 <a
-                  href="https://xpack.ai"
+                  href="https://github.com/xpack-ai/XPack-MCP-Marketplace"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 text-gray-600 hover:text-orange-500 transition-colors text-sm font-medium"
                 >
                   <div className="flex items-center gap-2 bg-white px-3 py-1 rounded-full border border-gray-200 hover:border-orange-200 transition-all duration-200">
                     <Star className="w-4 h-4 text-orange-500" />
-                    <span>Powered By XPack.AI</span>
+                    <span>Built on XPack MCP Marketplace (Apache-2.0)</span>
                   </div>
                 </a>
               </div>

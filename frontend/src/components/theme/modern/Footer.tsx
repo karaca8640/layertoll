@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import { Sparkles } from "lucide-react";
 import React from "react";
@@ -20,12 +21,12 @@ export const Footer: React.FC<FooterProps> = ({}) => {
               </span>
 
               <a
-                href="https://xpack.ai"
+                href="https://github.com/xpack-ai/XPack-MCP-Marketplace"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 text-primary-400 text-xs"
               >
-                <span>Powered By XPack.AI</span>
+                <span>Built on XPack MCP Marketplace (Apache-2.0)</span>
               </a>
             </div>
           </div>

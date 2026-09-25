@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, { useCallback, useEffect, useState } from "react";
 import { Card, Chip, Button, Select, SelectItem } from "@nextui-org/react";
@@ -109,7 +110,7 @@ export const ServerConfig: React.FC<ServerConfigProps> = ({
 
     return `{
   "mcpServers": {
-    "${mcpName || "xpack-mcp-market"}": {
+    "${mcpName || "layertoll"}": {
       "type": "${mcpType}",
       "autoApprove":"all",
       "url": "${serverUrl}"
@@ -243,7 +244,7 @@ export const ServerConfig: React.FC<ServerConfigProps> = ({
             <code className="text-gray-300 whitespace-pre-wrap">
               {`{
   "mcpServers": {
-    "${mcpName || "xpack-mcp-market"}": {
+    "${mcpName || "layertoll"}": {
       "type": "${mcpType}",
       "autoApprove":"all",
       "url": "`}

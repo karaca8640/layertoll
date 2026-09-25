@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, { useEffect, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -149,7 +150,7 @@ const DashboardContent: React.FC = () => {
                           {user.user_name || "Jack Liu"}
                         </p>
                         <p className="text-tiny text-default-600">
-                          {user.user_email || "dev@xpack.ai"}
+                          {user.user_email || "user@example.com"}
                         </p>
                       </div>
                     </div>

@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { useTranslation } from "@/shared/lib/useTranslation";
@@ -45,11 +46,11 @@ const SharePlatformModal: React.FC<SharePlatformModalProps> = ({
 
   const handleSocialShare = (platform: "x" | "facebook" | "linkedin") => {
     const text = t(
-      `Just launched my first MCP Platform:{{name}} with xpack.ai 🚀
-Built in minutes, no coding, ready for AI Agents 🤖
+      `My API is now a paid AI-agent service on {{name}} 🚀
+Agents discover it, call it and pay per request with x402 on X Layer 🤖
 
-👉Go and try my MCP: {{link}}
-#MCP #AI #APIs #XPack #AIagents #DevTools`,
+👉 {{link}}
+#MCP #x402 #XLayer #AIagents`,
       {
         name: platformConfig.name,
         link: window.location.origin,

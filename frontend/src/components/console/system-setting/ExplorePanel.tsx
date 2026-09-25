@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { Switch } from "@nextui-org/react";
@@ -26,11 +27,11 @@ export const ExplorePanel: React.FC<ExplorePanelProps> = ({
         <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium">
-              {t("Featured in the XPack showcase")}
+              {t("Opt in to the upstream XPack showcase (off by default)")}
             </span>
             <span className="text-xs text-gray-500">
               {t(
-                "Enable this option to feature your site in the XPack global showcase and reach users worldwide."
+                "When on, this site's name, logo and URL are sent to platform.xpack.ai (the upstream project's public showcase)."
               )}
             </span>
           </div>

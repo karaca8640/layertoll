@@ -39,6 +39,17 @@ CREATE TABLE IF NOT EXISTS `agent_payment_replay` (
   PRIMARY KEY (`replay_key`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Claimed x402 authorizations (replay protection)';
 
+-- Do not report this deployment to the upstream vendor's showcase service by default
+-- (upstream 1.0.1 enabled it; admins can still opt in from settings).
+UPDATE `sys_config` SET `value` = '0' WHERE `key` = 'is_showcased';
+
+-- Product defaults; INSERT IGNORE keeps any values an admin already set.
+INSERT IGNORE INTO `sys_config` (`id`,`key`, `value`,`description`,`created_at`,`updated_at`) VALUES
+  ('layertoll-platform_name', 'platform_name', 'LayerToll', 'Platform name', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('layertoll-website_title', 'website_title', 'LayerToll — sell your API to AI agents with x402 on X Layer', 'Website title', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('layertoll-headline', 'headline', 'Turn any API into a paid AI-agent service', 'Homepage headline', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('layertoll-subheadline', 'subheadline', 'Import an OpenAPI spec, price each tool, and let OKX AI agents discover, call and pay per request with x402 on X Layer.', 'Homepage subheadline', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
+
 INSERT INTO `sys_config` (`id`,`key`, `value`,`description`,`created_at`,`updated_at`)
 VALUES ('xpack-version','version', '1.4.0', 'LayerToll agent services + x402 on X Layer', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
     ON DUPLICATE KEY UPDATE `value` = VALUES(`value`), `description` = VALUES(`description`), `updated_at` = CURRENT_TIMESTAMP;

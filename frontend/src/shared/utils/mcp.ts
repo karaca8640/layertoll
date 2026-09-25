@@ -1,3 +1,4 @@
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 // Utility functions related to Model Context Protocol (MCP)
 
 /**
@@ -8,10 +9,10 @@
  *   1. Lower-case alphanumeric characters, hyphen (-) and underscore (_)
  *   2. Cannot start with a digit or hyphen – if it does, we prefix with "mcp-".
  *   3. Consecutive illegal characters are collapsed into a single hyphen.
- *   4. Empty or fully sanitised away strings fallback to "xpack-mcp-market".
+ *   4. Empty or fully sanitised away strings fallback to "layertoll".
  */
 export function sanitizeMCPServerName(rawName: string | undefined): string {
-  if (!rawName) return "xpack-mcp-market";
+  if (!rawName) return "layertoll";
 
   // Lower-case & replace invalid chars with hyphen
   let name = rawName
@@ -30,7 +31,7 @@ export function sanitizeMCPServerName(rawName: string | undefined): string {
   //   name = `xpack-${name}`;
   // }
 
-  return name || "xpack-mcp-market";
+  return name || "layertoll";
 }
 
 /**

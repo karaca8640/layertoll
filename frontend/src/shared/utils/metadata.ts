@@ -1,3 +1,4 @@
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 import { platformConfigService } from "@/services/platformConfigService";
 import { PlatformConfig } from "@/shared/types/system";
 import type { Metadata } from "next";
@@ -30,7 +31,7 @@ export const getDynamicTitle = async (pageTitle?: string) => {
     platformConfig.platform?.website_title ||
     platformConfig.platform?.headline ||
     platformConfig.platform?.name ||
-    "Connect Your AI Agent to the Real World - XPack";
+    "LayerToll — sell your API to AI agents with x402 on X Layer";
   return {
     ...platformConfig.platform,
     website_title: pageTitle ? `${pageTitle} - ${websiteTitle}` : websiteTitle,
@@ -63,9 +64,11 @@ export const createBaseMetadata = (config: PlatformConfig): Metadata => {
       "Low-code API development",
       "Enterprise API connectivity",
       "Developer tools API",
-      "XPack.AI",
+      "x402",
+      "X Layer",
+      "OKX AI",
     ],
-    authors: [{ name: "XPack.AI Team" }],
+    authors: [{ name: "LayerToll contributors" }],
     openGraph: {
       siteName: config?.name,
       title: config?.x_title || config?.headline,

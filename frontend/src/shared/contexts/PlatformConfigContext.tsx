@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, { createContext, useContext, useState, ReactNode } from "react";
 import {
@@ -12,12 +13,12 @@ import {
   PaymentChannel,
 } from "@/shared/types/system";
 export const _DefaultPlatformConfig: PlatformConfig = {
-  name: "XPack",
-  logo: "/static/logo/logo.png",
+  name: "LayerToll",
+  logo: "/static/logo/layertoll.svg",
   currency: "USD",
   language: "en",
-  website_title: "Connect Your AI Agent to the Real World - XPack",
-  headline: "Connect Your AI Agent to the Real World",
+  website_title: "LayerToll — sell your API to AI agents with x402 on X Layer",
+  headline: "Turn any API into a paid AI-agent service",
   subheadline: "",
   theme: Theme.DEFAULT,
   domain: "",

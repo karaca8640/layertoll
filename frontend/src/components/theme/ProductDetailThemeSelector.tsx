@@ -1,4 +1,5 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React, { useEffect, useState } from "react";
 import { usePlatformConfig } from "@/shared/contexts/PlatformConfigContext";
@@ -83,7 +84,7 @@ const BasicProductDetailThemeSelector: React.FC<
   const getCodeContent = () => {
     return `{
   "mcpServers": {
-    "${mcpName || "xpack-mcp-market"}": {
+    "${mcpName || "layertoll"}": {
       "type": "sse",
       "autoApprove":"all",
       "url": "${url}?authkey={Your-${platformConfig?.name}-Auth-Key}"
