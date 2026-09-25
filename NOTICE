@@ -1,0 +1,21 @@
+LayerToll
+Copyright 2026 LayerToll contributors
+
+This product is a derivative work of XPack MCP Marketplace
+(https://github.com/xpack-ai/XPack-MCP-Marketplace), which is licensed under
+the Apache License, Version 2.0. Copyright in the upstream code remains with
+its original authors. The upstream project did not ship a NOTICE file; the
+upstream LICENSE is kept unchanged in ./LICENSE and ./frontend/LICENSE.
+
+Files taken from upstream and changed for LayerToll carry a
+"Modified by LayerToll contributors" notice. See UPSTREAM.md for the full
+list of upstream vs. added components.
+
+Third-party runtime dependencies (installed, not vendored) include:
+  - OKX Payments x402 Python SDK "okxweb3-app-x402" (MIT) — github.com/okx/payments
+  - Model Context Protocol Python SDK "mcp" (MIT)
+  - FastAPI, SQLAlchemy, httpx, Next.js, NextUI and others under their own licenses.
+
+OKX, OKX AI, OnchainOS and X Layer are trademarks of their respective owners.
+LayerToll is an independent project built for OKX Dev Day 2026 and is not
+affiliated with or endorsed by OKX or by the XPack project.
