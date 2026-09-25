@@ -94,7 +94,11 @@ class VerifiedPayment:
 
 
 def build_facilitator_from_settings(settings) -> Any | None:
-    """OKX facilitator client, or None when credentials are not configured."""
+    """OKX facilitator client, the TEST MODE verifier, or None (fail closed)."""
+    if getattr(settings, "test_mode", False):
+        from services.agentpay.test_facilitator import TestModeFacilitator
+
+        return TestModeFacilitator(settings.network)
     if not settings.facilitator_configured:
         return None
     from x402.http import OKXAuthConfig, OKXFacilitatorClient, OKXFacilitatorConfig

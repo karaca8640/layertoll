@@ -38,6 +38,7 @@ def test_dashboard_with_no_activity_shows_zeros(seller):
         "total_calls": 0,
         "successful_calls": 0,
         "paid_calls": 0,
+        "test_mode_paid_calls": 0,
         "payment_challenges": 0,
         "rejected_payments": 0,
         "revenue_usd": "0.000000",

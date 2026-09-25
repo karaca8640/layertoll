@@ -10,6 +10,7 @@ import { CallRecord, agentPayService, errorMessage, shortHash } from "@/services
 
 const STATUS_COLOR: Record<string, "success" | "warning" | "danger" | "default" | "primary"> = {
   settled: "success",
+  test_verified: "warning",
   payment_required: "warning",
   rejected: "danger",
   settle_failed: "danger",
@@ -19,6 +20,7 @@ const STATUS_COLOR: Record<string, "success" | "warning" | "danger" | "default" 
 
 const STATUS_LABEL: Record<string, string> = {
   settled: "Settled",
+  test_verified: "Test payment · not settled",
   payment_required: "402 issued",
   rejected: "Payment rejected",
   settle_failed: "Settlement failed",
@@ -146,8 +148,13 @@ export const SettlementDashboard: React.FC = () => {
         <Chip variant="flat">
           Asset {net.network.payment_asset.symbol} {shortHash(net.network.payment_asset.address, 4)}
         </Chip>
-        <Chip variant="flat" color={net.facilitator.configured ? "success" : "danger"}>
-          {net.facilitator.configured
+        <Chip
+          variant="flat"
+          color={net.payment_mode === "test" ? "warning" : net.facilitator.configured ? "success" : "danger"}
+        >
+          {net.payment_mode === "test"
+            ? "TEST MODE: payments verified, never settled on chain"
+            : net.facilitator.configured
             ? "OKX x402 facilitator configured"
             : "Facilitator not configured — paid calls are rejected"}
         </Chip>
@@ -157,6 +164,9 @@ export const SettlementDashboard: React.FC = () => {
         <Metric label="Agent calls" value={m.total_calls} hint="incl. 402 challenges" />
         <Metric label="Successful calls" value={m.successful_calls} />
         <Metric label="Paid calls (settled)" value={m.paid_calls} />
+        {net.payment_mode === "test" && (
+          <Metric label="Test-mode paid calls" value={m.test_mode_paid_calls} hint="verified, not settled" />
+        )}
         <Metric label="Revenue" value={`${m.revenue_usd} USD`} hint={`settled in ${net.network.payment_asset.symbol}`} />
         <Metric label="402 challenges" value={m.payment_challenges} />
         <Metric label="Rejected payments" value={m.rejected_payments} hint="invalid / reused proofs" />

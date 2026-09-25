@@ -63,6 +63,7 @@ export interface Metrics {
   total_calls: number;
   successful_calls: number;
   paid_calls: number;
+  test_mode_paid_calls: number;
   payment_challenges: number;
   rejected_payments: number;
   revenue_usd: string;
@@ -116,7 +117,8 @@ export interface NetworkStatus {
     is_testnet: boolean;
     payment_asset: { symbol: string; address: string; decimals: number };
   };
-  facilitator: { provider: string; base_url: string; configured: boolean };
+  payment_mode: "facilitator" | "test";
+  facilitator: { provider: string; base_url: string | null; configured: boolean };
   onchain_receipt_check: boolean;
   public_base_url: string;
   default_payout_wallet: string | null;
@@ -171,11 +173,31 @@ export interface ServiceManifest {
   tools: ManifestTool[];
 }
 
+export interface TestPaymentStep {
+  step: string;
+  status?: number;
+  payment_required?: PaymentRequiredBody | null;
+  payment_response?: { success: boolean; status?: string; transaction: string; network: string; payer?: string } | null;
+  result?: unknown;
+  payer?: string;
+  to?: string;
+  value?: string;
+  network?: string;
+}
+
+export interface TestPaymentResult {
+  endpoint: string;
+  arguments: Record<string, unknown>;
+  steps: TestPaymentStep[];
+  mode?: string;
+}
+
 export interface JudgeView {
   service: ServiceManifest | null;
   network: NetworkStatus;
   metrics: Metrics;
   latest_settlement?: CallRecord | null;
+  latest_test_payment?: CallRecord | null;
   latest_calls?: CallRecord[];
 }
 
@@ -211,6 +233,16 @@ export const agentPayService = {
         body: JSON.stringify({ tool, arguments: args }),
       })
     ),
+  testPayment: async (tool: string): Promise<TestPaymentResult> => {
+    const res = await fetch(getApiUrl("/api/agentpay/public/test-payment"), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tool }),
+    });
+    const json = await res.json();
+    if (!json.success) throw new Error(json.error_message || "Request failed");
+    return json.data;
+  },
   judge: async (): Promise<JudgeView> => {
     const res = await fetch(getApiUrl("/api/agentpay/public/judge"), { cache: "no-store" });
     const json = await res.json();

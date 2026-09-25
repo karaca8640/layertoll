@@ -89,13 +89,17 @@ class AgentCallRepository:
             db.commit()
         return call_id
 
-    def latest(self, limit: int = 20, service_id: Optional[str] = None, paid_only: bool = False) -> list[AgentCall]:
+    def latest(
+        self, limit: int = 20, service_id: Optional[str] = None, paid_only: bool = False, status: Optional[str] = None
+    ) -> list[AgentCall]:
         with self.session_factory() as db:
             stmt = select(AgentCall).order_by(AgentCall.created_at.desc(), AgentCall.id)
             if service_id:
                 stmt = stmt.where(AgentCall.service_id == service_id)
             if paid_only:
                 stmt = stmt.where(AgentCall.payment_status == PaymentStatus.SETTLED)
+            if status:
+                stmt = stmt.where(AgentCall.payment_status == status)
             rows = list(db.execute(stmt.limit(limit)).scalars().all())
             for row in rows:
                 db.expunge(row)
@@ -121,6 +125,12 @@ class AgentCallRepository:
                 ).scalar()
                 or 0
             )
+            test_paid = (
+                db.execute(
+                    scoped(select(func.count(AgentCall.id)).where(AgentCall.payment_status == PaymentStatus.TEST_VERIFIED))
+                ).scalar()
+                or 0
+            )
             rejected = (
                 db.execute(
                     scoped(select(func.count(AgentCall.id)).where(AgentCall.payment_status == PaymentStatus.REJECTED))
@@ -137,6 +147,7 @@ class AgentCallRepository:
             "total_calls": int(total),
             "successful_calls": int(successful),
             "paid_calls": int(paid),
+            "test_mode_paid_calls": int(test_paid),
             "payment_challenges": int(challenges),
             "rejected_payments": int(rejected),
             "revenue_usd": str(Decimal(revenue).quantize(Decimal("0.000001"))),

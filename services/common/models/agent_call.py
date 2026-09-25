@@ -23,6 +23,7 @@ class PaymentStatus:
     REJECTED = "rejected"  # proof invalid / mismatched / reused
     VERIFIED = "verified"  # verified, but upstream failed -> not settled, not charged
     SETTLED = "settled"  # settled on X Layer
+    TEST_VERIFIED = "test_verified"  # TEST MODE: signature verified, never settled, no revenue
     SETTLE_FAILED = "settle_failed"
 
 

@@ -283,7 +283,7 @@ class SellerService:
             "metrics": self.executor.calls.metrics(),
             "services": services,
             "latest_calls": latest,
-            "latest_receipts": [r for r in latest if r["payment_status"] == "settled"],
+            "latest_receipts": [r for r in latest if r["payment_status"] in ("settled", "test_verified")],
             "network": self.settings.public_status(),
         }
 
@@ -301,10 +301,75 @@ class SellerService:
         _, tools = self.executor.list_tools(service.id)
         manifest = service_manifest(self.executor, service, tools)
         settled = self.executor.calls.latest(limit=1, service_id=service.id, paid_only=True)
+        test_paid = self.executor.calls.latest(limit=1, service_id=service.id, status="test_verified")
         return {
+            "latest_test_payment": self.receipt_view(test_paid[0]) if test_paid else None,
             "service": manifest,
             "network": self.settings.public_status(),
             "metrics": self.executor.calls.metrics(service.id),
             "latest_settlement": self.receipt_view(settled[0]) if settled else None,
             "latest_calls": [self.receipt_view(c) for c in self.executor.calls.latest(limit=8, service_id=service.id)],
         }
+
+
+    # ------------------------------------------------------- test-mode payment
+    async def test_mode_payment(self, tool_name: str, transport=None) -> dict:
+        """Public demo of the full paid flow — only when AGENTPAY_PAYMENT_MODE=test.
+
+        Acts as an agent over real HTTP against the public A2MCP endpoint:
+        unpaid call -> 402 challenge -> sign an EIP-3009 authorization with a
+        throw-away key using the official x402 SDK client -> retry with
+        PAYMENT-SIGNATURE -> result. The test-mode facilitator verifies the
+        signature and never settles, so no funds move and no tx hash exists.
+        Only the tool's own example arguments are sent.
+        """
+        if not self.settings.test_mode:
+            raise SellerError("Test payments are only available when the deployment runs in TEST MODE")
+        from eth_account import Account
+        from x402 import x402Client
+        from x402.http.utils import decode_payment_response_header, encode_payment_signature_header
+        from x402.mechanisms.evm.exact.client import ExactEvmScheme
+        from x402.schemas import PaymentRequired
+
+        view = self.judge_view()
+        manifest = view.get("service")
+        if not manifest:
+            raise SellerError("No published service")
+        tool = next((t for t in manifest["tools"] if t["name"] == tool_name and t["paid"]), None)
+        if tool is None:
+            raise SellerError("Unknown paid tool")
+        url = f"{self.settings.api_internal_url}/a2mcp/{manifest['service']['slug']}/{tool['name']}"
+        args = tool["exampleArguments"]
+        steps = []
+        async with httpx.AsyncClient(timeout=60, transport=transport) as http:
+            first = await http.post(url, json=args)
+            challenge = json.loads(base64.b64decode(first.headers["PAYMENT-REQUIRED"])) if first.status_code == 402 else None
+            steps.append({"step": "call without payment", "status": first.status_code, "payment_required": challenge})
+            if challenge is None:
+                return {"endpoint": tool["a2mcpEndpoint"], "arguments": args, "steps": steps}
+            buyer = Account.create()  # throw-away test key, never stored
+            client = x402Client()
+            client.register("eip155:*", ExactEvmScheme(buyer))
+            payload = await client.create_payment_payload(PaymentRequired.model_validate(challenge))
+            auth = payload.payload["authorization"]
+            steps.append(
+                {
+                    "step": "agent signs EIP-3009 authorization (test key)",
+                    "payer": auth["from"],
+                    "to": auth["to"],
+                    "value": auth["value"],
+                    "network": payload.accepted.network,
+                }
+            )
+            second = await http.post(url, json=args, headers={"PAYMENT-SIGNATURE": encode_payment_signature_header(payload)})
+            settle = (
+                decode_payment_response_header(second.headers["PAYMENT-RESPONSE"]).model_dump(by_alias=True, exclude_none=True)
+                if "PAYMENT-RESPONSE" in second.headers
+                else None
+            )
+            try:
+                body = second.json()
+            except ValueError:
+                body = {"text": second.text[:2000]}
+            steps.append({"step": "retry with PAYMENT-SIGNATURE", "status": second.status_code, "payment_response": settle, "result": body})
+        return {"endpoint": tool["a2mcpEndpoint"], "arguments": args, "steps": steps, "mode": "test"}

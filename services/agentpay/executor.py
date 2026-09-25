@@ -187,7 +187,17 @@ class AgentToolExecutor:
             description = f"{service.name} / {tool.name}"
 
             if payment is None:
-                required = self.gate.payment_required(requirements, resource, description)
+                required = self.gate.payment_required(
+                    requirements,
+                    resource,
+                    description,
+                    error=(
+                        "Payment required (TEST MODE on "
+                        f"{self.gate.network.name}: the signature is verified, nothing is settled on chain)"
+                    )
+                    if self.settings.test_mode
+                    else "Payment required to access this resource",
+                )
                 call_id = self.calls.record(**record, payment_status=PaymentStatus.REQUIRED, success=False)
                 return Outcome(
                     "payment_required",
@@ -257,6 +267,17 @@ class AgentToolExecutor:
                 body = required.model_dump(by_alias=True, exclude_none=True)
                 body["reason"] = exc.code
                 return Outcome("payment_error", 402, body, payment_required=required, call_id=call_id)
+
+            if self.settings.test_mode:
+                # TEST MODE: signature verified, nothing settled -> no tx hash, no revenue.
+                record.update(payment_status=PaymentStatus.TEST_VERIFIED, tx_hash=None, payer=settlement.payer or record.get("payer"))
+                call_id = self.calls.record(
+                    **record,
+                    upstream_status=upstream_status,
+                    success=True,
+                    latency_ms=int((time.monotonic() - started) * 1000),
+                )
+                return Outcome("result", 200, result, settlement=settlement, call_id=call_id)
 
             onchain_verified = None
             if self.settings.verify_onchain and settlement.transaction:

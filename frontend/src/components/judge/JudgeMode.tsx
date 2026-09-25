@@ -10,6 +10,7 @@ import { Play, RefreshCw } from "lucide-react";
 import {
   ManifestTool,
   PaymentRequiredBody,
+  TestPaymentResult,
   agentPayService,
   errorMessage,
   shortHash,
@@ -34,6 +35,21 @@ export const JudgeMode: React.FC = () => {
   const load = () => mutate();
   const [probe, setProbe] = useState<Probe>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  const [testPay, setTestPay] = useState<TestPaymentResult | null>(null);
+  const [testPayError, setTestPayError] = useState<string | null>(null);
+
+  const runTestPayment = async (tool: ManifestTool) => {
+    setBusy("testpay");
+    setTestPayError(null);
+    try {
+      setTestPay(await agentPayService.testPayment(tool.name));
+      load();
+    } catch (e) {
+      setTestPayError(errorMessage(e));
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const call = async (tool: ManifestTool, label: string) => {
     setBusy(label);
@@ -75,6 +91,8 @@ export const JudgeMode: React.FC = () => {
   const freeTool = svc?.tools.find((t) => !t.paid);
   const paidTool = svc?.tools.find((t) => t.paid);
   const settlement = view.latest_settlement;
+  const testMode = net.payment_mode === "test";
+  const testPayment = view.latest_test_payment;
 
   return (
     <div className="max-w-6xl mx-auto p-6 flex flex-col gap-5">
@@ -91,6 +109,17 @@ export const JudgeMode: React.FC = () => {
         </Button>
       </div>
 
+      {testMode && (
+        <Card shadow="none" className="border-2 border-warning bg-warning-50">
+          <CardBody className="text-small">
+            <b>TEST ENVIRONMENT.</b> Payments on this public demo run in test mode on {net.network.name} (chain{" "}
+            {net.network.chain_id}): the agent&apos;s x402 / EIP-3009 signature, amount, payee, expiry and replay are
+            really verified, then the tool runs. Nothing is settled on chain, no funds move and no transaction hash
+            exists. Revenue stays 0.
+          </CardBody>
+        </Card>
+      )}
+
       <div className="flex flex-wrap gap-2">
         <Chip color={net.network.is_testnet ? "warning" : "primary"} variant="flat">
           {net.network.name} · chain {net.network.chain_id} · {net.network.caip2}
@@ -98,8 +127,12 @@ export const JudgeMode: React.FC = () => {
         <Chip variant="flat">
           {net.network.payment_asset.symbol} {shortHash(net.network.payment_asset.address, 4)}
         </Chip>
-        <Chip color={net.facilitator.configured ? "success" : "danger"} variant="flat">
-          {net.facilitator.configured ? "x402 facilitator: configured" : "x402 facilitator: NOT configured (paid calls fail closed)"}
+        <Chip color={testMode ? "warning" : net.facilitator.configured ? "success" : "danger"} variant="flat">
+          {testMode
+            ? "x402: TEST MODE (verified, not settled)"
+            : net.facilitator.configured
+            ? "x402 facilitator: configured"
+            : "x402 facilitator: NOT configured (paid calls fail closed)"}
         </Chip>
         <Chip variant="flat">OKX AI listing: pending (not submitted from this deployment)</Chip>
       </div>
@@ -151,11 +184,12 @@ export const JudgeMode: React.FC = () => {
             </CardBody>
           </Card>
 
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-6 gap-3">
             {[
               ["Agent calls", view.metrics.total_calls],
               ["Successful", view.metrics.successful_calls],
-              ["Paid (settled)", view.metrics.paid_calls],
+              ["Paid (settled on chain)", view.metrics.paid_calls],
+              ["Test-mode paid (not settled)", view.metrics.test_mode_paid_calls ?? 0],
               ["402 challenges", view.metrics.payment_challenges],
               ["Revenue", `${view.metrics.revenue_usd} USD`],
             ].map(([label, value]) => (
@@ -198,9 +232,22 @@ export const JudgeMode: React.FC = () => {
                 </div>
               ) : (
                 <span className="text-default-500">
-                  No settled payment on this deployment yet. The 402 challenge below is real; settling it requires a
-                  funded X Layer wallet and a configured OKX facilitator.
+                  No on-chain settlement on this deployment.{" "}
+                  {testMode
+                    ? "It runs in test mode, so payments are verified but never settled."
+                    : "Settling requires a funded X Layer wallet and a configured OKX facilitator."}
                 </span>
+              )}
+              {testPayment && (
+                <div className="flex flex-col gap-1 mt-3">
+                  <Chip size="sm" color="warning" variant="flat">
+                    Latest TEST payment: verified, not settled
+                  </Chip>
+                  <span>
+                    {testPayment.tool_name} · {testPayment.price_usd} USD · payer {shortHash(testPayment.payer, 4)} →{" "}
+                    {shortHash(testPayment.pay_to, 4)} · {testPayment.network} · tx: none (test mode)
+                  </span>
+                </div>
               )}
             </CardBody>
           </Card>
@@ -228,7 +275,56 @@ export const JudgeMode: React.FC = () => {
                     Call paid tool without payment ({paidTool.name})
                   </Button>
                 )}
+                {paidTool && testMode && (
+                  <Button
+                    color="primary"
+                    startContent={<Play size={14} />}
+                    isLoading={busy === "testpay"}
+                    onPress={() => runTestPayment(paidTool)}
+                  >
+                    Pay in TEST MODE and call ({paidTool.name})
+                  </Button>
+                )}
               </div>
+              {testPayError && <span className="text-danger text-small">{testPayError}</span>}
+              {testPay && (
+                <div className="flex flex-col gap-2 border border-divider rounded-lg p-3">
+                  <span className="text-small font-semibold">
+                    Test-mode agent run against {testPay.endpoint} (throw-away key, nothing settled)
+                  </span>
+                  {testPay.steps.map((s, i) => (
+                    <div key={i} className="flex flex-col gap-1">
+                      <div className="flex gap-2 items-center flex-wrap">
+                        <Chip size="sm" variant="flat">
+                          {i + 1}
+                        </Chip>
+                        <span className="text-small">{s.step}</span>
+                        {s.status !== undefined && (
+                          <Chip size="sm" color={s.status === 200 ? "success" : s.status === 402 ? "warning" : "danger"}>
+                            HTTP {s.status}
+                          </Chip>
+                        )}
+                      </div>
+                      {s.payer && (
+                        <code className="text-tiny break-all">
+                          from {s.payer} to {s.to} · value {s.value} · {s.network}
+                        </code>
+                      )}
+                      {s.payment_response && (
+                        <code className="text-tiny break-all">
+                          PAYMENT-RESPONSE: success={String(s.payment_response.success)} · status=
+                          {s.payment_response.status} · transaction: none (test mode)
+                        </code>
+                      )}
+                      {s.result !== undefined && (
+                        <pre className="text-tiny bg-default-100 rounded p-2 overflow-auto max-h-56">
+                          {JSON.stringify(s.result, null, 2)}
+                        </pre>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
               {probe && (
                 <div className="flex flex-col gap-2">
                   <Chip color={probe.status === 200 ? "success" : probe.status === 402 ? "warning" : "danger"}>

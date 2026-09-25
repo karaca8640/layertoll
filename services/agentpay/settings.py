@@ -34,6 +34,12 @@ class AgentPaySettings:
     verify_onchain: bool
     demo_api_base_url: str
     api_internal_url: str
+    # "facilitator" (OKX x402 facilitator) or "test" (signature-verified, never settled)
+    payment_mode: str = "facilitator"
+
+    @property
+    def test_mode(self) -> bool:
+        return self.payment_mode == "test"
 
     @property
     def facilitator_configured(self) -> bool:
@@ -43,10 +49,13 @@ class AgentPaySettings:
         """Safe-to-expose configuration summary. Never includes secret values."""
         return {
             "network": self.network.public_dict(),
+            "payment_mode": self.payment_mode,
             "facilitator": {
-                "provider": "OKX x402 facilitator",
-                "base_url": self.okx_facilitator_base_url,
-                "configured": self.facilitator_configured,
+                "provider": "TEST MODE: local signature verification, no on-chain settlement"
+                if self.test_mode
+                else "OKX x402 facilitator",
+                "base_url": None if self.test_mode else self.okx_facilitator_base_url,
+                "configured": self.test_mode or self.facilitator_configured,
             },
             "onchain_receipt_check": self.verify_onchain,
             "public_base_url": self.public_base_url,
@@ -68,7 +77,15 @@ def load_settings() -> AgentPaySettings:
         verify_onchain=os.getenv("AGENTPAY_VERIFY_ONCHAIN", "true").lower() == "true",
         demo_api_base_url=os.getenv("DEMO_API_BASE_URL", "http://127.0.0.1:8002/demo-api").rstrip("/"),
         api_internal_url=os.getenv("AGENTPAY_API_INTERNAL_URL", "http://127.0.0.1:8002").rstrip("/"),
+        payment_mode=_payment_mode(),
     )
+
+
+def _payment_mode() -> str:
+    mode = os.getenv("AGENTPAY_PAYMENT_MODE", "facilitator").strip().lower()
+    if mode not in ("facilitator", "test"):
+        raise ValueError("AGENTPAY_PAYMENT_MODE must be 'facilitator' or 'test'")
+    return mode
 
 
 def usd_price(value) -> Decimal | None:

@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (do not log password hashes).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import random
 import logging
 from sqlalchemy.orm import Session
@@ -168,7 +170,7 @@ class AuthService:
             logger.warning(f"not found user, account: {account}")
             return None
         if user.password != password:
-            logger.warning(f"password not match, account: {account}, password: {password}, user password: {user.password}")
+            logger.warning(f"password not match, account: {account}")  # LayerToll: never log password hashes
             return None
 
         token = self.create_user_token(user.id)

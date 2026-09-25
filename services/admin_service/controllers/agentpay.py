@@ -8,8 +8,9 @@ Admin (Bearer token, admin role):
   PUT  /api/agentpay/services/{id}           base URL, payout wallet, tool on/off + price, publish
   POST /api/agentpay/services/{id}/test      real HTTP call to the public A2MCP endpoint (no payment)
   GET  /api/agentpay/dashboard               calls, paid calls, revenue, receipts, endpoint health
-Public (no auth, read-only):
+Public (no auth):
   GET  /api/agentpay/public/judge            judge mode data straight from backend state
+  POST /api/agentpay/public/test-payment     TEST MODE only: demo agent pays a tool (never settled)
 """
 
 import json
@@ -139,3 +140,12 @@ async def dashboard(request: Request, seller: SellerService = Depends(get_seller
 @router.get("/public/judge")
 def judge(seller: SellerService = Depends(get_seller)):
     return ResponseUtils.success(data=seller.judge_view())
+
+
+@router.post("/public/test-payment")
+async def test_payment(body: dict = Body(...), seller: SellerService = Depends(get_seller)):
+    """TEST MODE only: run the full 402 -> sign -> verify -> result flow as a demo agent."""
+    try:
+        return ResponseUtils.success(data=await seller.test_mode_payment(str(body.get("tool", ""))))
+    except SellerError as exc:
+        return ResponseUtils.error(message=str(exc), code=400)
