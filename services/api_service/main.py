@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (mounts A2MCP, agent MCP (x402) and demo API routes).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 """
 API Service - FastAPI main entry point for MCP Streamable HTTP service
 """
@@ -20,26 +22,34 @@ from services.api_service.utils.connection_manager import connection_manager
 from services.common.middleware.exception_middleware import ExceptionHandlingMiddleware
 from services.common.utils.response_utils import ResponseUtils
 from services.common import error_msg
+# LayerToll (OKX Dev Day 2026): agent-facing x402 endpoints + demo business API
+from services.agentpay.a2mcp_http import build_router as build_a2mcp_router
+from services.agentpay.agent_mcp import AgentMcpEndpoint, build_agent_mcp
+from services.agentpay.runtime import get_executor
+from services.demo_api.app import app as demo_api_app
 
 # Setup logging for api service
 setup_logging("api_service")
 logger = get_logger(__name__)
+
+_agent_mcp_server, agent_mcp_manager = build_agent_mcp(get_executor)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifecycle management"""
     logger.info(f"MCP Streamable HTTP Service starting... Port: {Config.API_PORT}")
-    
-    yield
-    
+
+    async with agent_mcp_manager.run():
+        yield
+
     logger.info("MCP Streamable HTTP Service shutting down...")
 
 
 # Create FastAPI application
 app = FastAPI(
-    title="XPack MCP Service", 
-    description="XPack MCP Streamable HTTP service",
+    title="LayerToll Agent Gateway",
+    description="MCP + OKX AI A2MCP endpoints with x402 payments on X Layer (based on XPack MCP Streamable HTTP service)",
     version="1.0.0",
     openapi_url="/openapi.json",
     lifespan=lifespan
@@ -114,10 +124,17 @@ mcp = McpController()
 @app.get("/")
 def read_root():
     return {
-        "message": f"XPack MCP Streamable HTTP Service running on port {Config.API_PORT}",
+        "message": f"LayerToll agent gateway running on port {Config.API_PORT}",
         "version": "1.0.0",
         "protocol": "MCP Streamable HTTP",
-        "endpoints": ["/mcp/{service_id}", "/mcp/messages/", "/mcp/status/{service_id}"],
+        "endpoints": [
+            "/a2mcp/{service}",
+            "/a2mcp/{service}/{tool}",
+            "/agent-mcp/{service}",
+            "/mcp/{service_id}",
+            "/mcp/messages/",
+            "/mcp/status/{service_id}",
+        ],
         "service_id_support": "Supports both service ID and slug_name",
         "reconnect_info": "Service supports automatic reconnection after restart"
     }
@@ -206,6 +223,13 @@ mcp_app = Starlette(routes=mcp_routes)
 
 # Mount MCP sub-app to FastAPI application
 app.mount("/mcp", mcp_app)
+
+# LayerToll: OKX AI A2MCP endpoints, agent MCP endpoint (x402), demo business API
+app.include_router(build_a2mcp_router(get_executor))
+_agent_mcp_endpoint = AgentMcpEndpoint(agent_mcp_manager)
+app.router.routes.append(Route("/agent-mcp/{service}", endpoint=_agent_mcp_endpoint, methods=["GET", "POST", "DELETE"]))
+app.router.routes.append(Route("/agent-mcp/{service}/", endpoint=_agent_mcp_endpoint, methods=["GET", "POST", "DELETE"]))
+app.mount("/demo-api", demo_api_app)
 
 # Logging is already configured by setup_logging("api_service")
 
