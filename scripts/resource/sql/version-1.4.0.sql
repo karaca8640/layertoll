@@ -4,7 +4,7 @@ SET FOREIGN_KEY_CHECKS=0;
 
 ALTER TABLE `mcp_service` ADD `agent_published` tinyint NULL DEFAULT 0 COMMENT '1 = exposed on /a2mcp and /agent-mcp';
 ALTER TABLE `mcp_service` ADD `payout_wallet` varchar(42) NULL COMMENT 'X Layer address receiving x402 payments';
-ALTER TABLE `mcp_tool_api` ADD `x402_price` decimal(18,6) NULL COMMENT 'Per-call x402 price in USD; NULL/0 = free';
+ALTER TABLE `mcp_tool_api` ADD `x402_price` decimal(18,6) NULL COMMENT 'Per-call x402 price in USD, NULL or 0 means free';
 
 CREATE TABLE IF NOT EXISTS `agent_call` (
   `id` char(36) NOT NULL,
@@ -40,10 +40,10 @@ CREATE TABLE IF NOT EXISTS `agent_payment_replay` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='Claimed x402 authorizations (replay protection)';
 
 -- Do not report this deployment to the upstream vendor's showcase service by default
--- (upstream 1.0.1 enabled it; admins can still opt in from settings).
+-- (upstream 1.0.1 enabled it, admins can still opt in from settings).
 UPDATE `sys_config` SET `value` = '0' WHERE `key` = 'is_showcased';
 
--- Product defaults; INSERT IGNORE keeps any values an admin already set.
+-- Product defaults: INSERT IGNORE keeps any values an admin already set.
 INSERT IGNORE INTO `sys_config` (`id`,`key`, `value`,`description`,`created_at`,`updated_at`) VALUES
   ('layertoll-platform_name', 'platform_name', 'LayerToll', 'Platform name', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('layertoll-website_title', 'website_title', 'LayerToll — sell your API to AI agents with x402 on X Layer', 'Website title', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),

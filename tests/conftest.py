@@ -109,7 +109,7 @@ from services.common.models.mcp_tool_api import HttpMethod, McpToolApi  # noqa: 
 from services.demo_api.app import app as demo_app  # noqa: E402
 
 SELLER_WALLET = "0x1111111111111111111111111111111111111111"
-UPSTREAM_SECRET = "sk_live_upstream_secret_value_do_not_leak"
+UPSTREAM_SECRET = "test-upstream-credential-not-a-real-key"
 
 
 # ------------------------------------------------------------- facilitator

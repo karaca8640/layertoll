@@ -21,7 +21,8 @@ type Probe = { label: string; status: number; headerDecoded?: PaymentRequiredBod
 const decodeHeader = (value: string | null): PaymentRequiredBody | undefined => {
   if (!value) return undefined;
   try {
-    return JSON.parse(atob(value));
+    const bytes = Uint8Array.from(atob(value), (c) => c.charCodeAt(0));
+    return JSON.parse(new TextDecoder().decode(bytes));
   } catch {
     return undefined;
   }
