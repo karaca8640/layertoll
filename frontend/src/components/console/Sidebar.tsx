@@ -1,12 +1,12 @@
 "use client";
+// NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026. Original work: XPack MCP Marketplace (Apache-2.0).
 
 import React from "react";
 import { useTranslation } from "@/shared/lib/useTranslation";
 import { Button, Divider, Tooltip } from "@nextui-org/react";
-import { ExternalLinkIcon, LogOut, Settings } from "lucide-react";
+import { ExternalLinkIcon, Gavel, LogOut, Settings } from "lucide-react";
 import { DashboardSidebarProps } from "@/shared/types/dashboard";
 import { DynamicLogo } from "@/shared/components/DynamicLogo";
-import { FaDiscord } from "react-icons/fa";
 import Link from "next/link";
 
 interface ConsoleSidebarProps extends DashboardSidebarProps {
@@ -74,13 +74,13 @@ const ConsoleSidebar: React.FC<ConsoleSidebarProps> = ({
             <div className="space-y-2">
               <Button
                 variant="light"
-                startContent={<FaDiscord size={18} />}
+                startContent={<Gavel size={18} />}
                 className="w-full h-auto p-4 justify-start"
                 onPress={() => {
-                  window.open("https://discord.gg/cyZfcdCXkW", "_blank");
+                  window.open("/judge", "_blank");
                 }}
               >
-                {t("Discord")}
+                Judge mode
               </Button>
 
               {/* Settings */}
