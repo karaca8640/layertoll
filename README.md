@@ -101,7 +101,7 @@ Business API → Agent Service → OKX AI → x402 → X Layer → Paid API Exec
 - Receipts + seller revenue dashboard, public Judge mode
 - Web Intelligence demo business API (real computation, no API key)
 - Importer fixes: valid MCP tool names, base URL from `servers`, prices kept on re-import
-- 37 automated tests (upstream had none), CI, Docker Compose deployment, secret-free config
+- 38 automated tests (upstream had none), CI, Docker Compose deployment, secret-free config
 - Hackathon UX and LayerToll branding with upstream credit
 
 Details and commit mapping: [BUILD_LOG.md](BUILD_LOG.md). File-level provenance: [UPSTREAM.md](UPSTREAM.md).
@@ -161,10 +161,10 @@ Names only (see [.env.example](.env.example)); never commit values.
 
 ```bash
 pip install -r requirements-dev.txt
-python -m pytest -q                         # backend: 37 tests
+python -m pytest -q                         # backend: 38 tests
 cd frontend && pnpm check-types && pnpm lint:agentpay && pnpm build
 ```
-The tests use SQLite and in-memory Redis/RabbitMQ stand-ins, the official x402 SDK client to sign real EIP-3009 payments with a throw-away key, and a local facilitator **test double** that verifies signatures with the SDK's EIP-712 code. They cover: free tool, paid tool without payment (402, API not called), valid payment (executes + settles + receipt), replayed / tampered / forged / underpaid / redirected / garbage / expired proofs, no facilitator (fail closed), upstream failure (safe error, not charged), `input_required`, OpenAPI import schemas and tool names, X Layer config vs. the official SDK, on-chain receipt check, MCP client x402 flow, secret non-disclosure, pricing/publish rules, dashboard and judge data.
+The tests use SQLite and in-memory Redis/RabbitMQ stand-ins, the official x402 SDK client to sign real EIP-3009 payments with a throw-away key, and a local facilitator **test double** that verifies signatures with the SDK's EIP-712 code. They cover: free tool, paid tool without payment (402, API not called), valid payment (executes + settles + receipt), replayed / tampered / forged / underpaid / redirected / garbage / expired proofs, no facilitator (fail closed), upstream failure (safe error, not charged), `input_required`, OpenAPI import schemas and tool names, X Layer config vs. the official SDK, on-chain receipt check, MCP client x402 flow, `scripts/demo_agent.py --pay` against a real uvicorn server, secret non-disclosure, pricing/publish rules, dashboard and judge data.
 
 `pnpm lint` (whole frontend) reports pre-existing findings in upstream files; the CI lint gate covers LayerToll's frontend code.
 
