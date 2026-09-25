@@ -76,9 +76,12 @@ async def lifespan(app: FastAPI):
     # Startup: Start consumer in separate thread
     logger.info("Admin Service starting...")
     try:
-        consumer_thread = threading.Thread(target=start_billing_consumer, daemon=True)
-        consumer_thread.start()
-        logger.info("Billing message consumer started in background")
+        if Config.LITE_MODE:
+            logger.info("Lite mode: no RabbitMQ, billing consumer not started")
+        else:
+            consumer_thread = threading.Thread(target=start_billing_consumer, daemon=True)
+            consumer_thread.start()
+            logger.info("Billing message consumer started in background")
     except Exception as e:
         logger.error(f"Failed to start billing consumer: {str(e)}")
     

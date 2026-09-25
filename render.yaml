@@ -1,0 +1,16 @@
+# One-click Render Blueprint for the LayerToll public demo (free plan).
+# Lite mode + TEST MODE payments on X Layer testnet; see deploy/render/.
+services:
+  - type: web
+    name: layertoll
+    runtime: docker
+    plan: free
+    region: frankfurt
+    dockerfilePath: ./deploy/render/Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      # Admin console password (Render generates it; visible only in your dashboard)
+      - key: LAYERTOLL_ADMIN_PASSWORD
+        generateValue: true

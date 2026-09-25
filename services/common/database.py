@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (optional DATABASE_URL for lite mode).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from .config import Config
@@ -28,7 +30,27 @@ engine_config = {
 
 logger.info(f"Database pool config: pool_size={Config.DB_POOL_SIZE}, max_overflow={Config.DB_MAX_OVERFLOW}")
 
-engine = create_engine(**engine_config)
+if Config.DATABASE_URL:
+    # LayerToll lite mode: e.g. sqlite:////tmp/layertoll.db (MySQL settings above unused)
+    from sqlalchemy import event
+
+    _is_sqlite = Config.DATABASE_URL.startswith("sqlite")
+    engine = create_engine(
+        Config.DATABASE_URL,
+        echo=False,
+        pool_pre_ping=True,
+        connect_args={"check_same_thread": False, "timeout": 30} if _is_sqlite else {},
+    )
+    if _is_sqlite:
+
+        @event.listens_for(engine, "connect")
+        def _sqlite_pragmas(dbapi_connection, _record):
+            cursor = dbapi_connection.cursor()
+            cursor.execute("PRAGMA journal_mode=WAL")
+            cursor.execute("PRAGMA busy_timeout=30000")
+            cursor.close()
+else:
+    engine = create_engine(**engine_config)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 

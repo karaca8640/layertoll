@@ -1,4 +1,4 @@
-# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (public judge-mode path prefix).
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (public judge-mode path prefix, lite mode).
 # Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import os
 import logging
@@ -22,6 +22,11 @@ class Config:
     MYSQL_USER = os.getenv("MYSQL_USER", "root")
     MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "123456")
     MYSQL_DB = os.getenv("MYSQL_DB", "xpack")
+
+    # LayerToll lite mode (single free-tier container): SQLite + in-memory Redis,
+    # no RabbitMQ. Off by default; the MySQL/Redis/RabbitMQ setup is unchanged.
+    LITE_MODE = os.getenv("LAYERTOLL_LITE", "false").lower() == "true"
+    DATABASE_URL = os.getenv("DATABASE_URL", "")
 
     # Database connection pool settings
     DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", 20))

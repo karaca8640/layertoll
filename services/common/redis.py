@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (in-memory store in lite mode).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import redis
 from redis import Redis
 from typing import Optional, Any
@@ -9,6 +11,12 @@ class RedisClient:
     
     def __init__(self):
         """Initialize Redis connection"""
+        if Config.LITE_MODE:
+            # LayerToll lite mode: in-process Redis-compatible store (incl. Lua eval)
+            import fakeredis
+
+            self.client = fakeredis.FakeRedis(decode_responses=True)
+            return
         try:
             self.client: Redis = redis.Redis(
                 host=Config.REDIS_HOST,

@@ -1,0 +1,3 @@
+-r requirements.txt
+# LayerToll lite mode (single free-tier container): in-memory Redis-compatible store
+fakeredis[lua]>=2.20

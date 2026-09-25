@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (no broker in lite mode).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import pika
 import logging
 from .config import Config
@@ -13,6 +15,9 @@ class RabbitMQClient:
 
     def _setup_connection(self):
         """Establish RabbitMQ connection"""
+        if Config.LITE_MODE:
+            # LayerToll lite mode: no broker. Only upstream wallet billing uses the queue.
+            return
         try:
             credentials = pika.PlainCredentials(Config.RABBITMQ_USER, Config.RABBITMQ_PASSWORD)
             parameters = pika.ConnectionParameters(
@@ -32,6 +37,9 @@ class RabbitMQClient:
 
     def publish(self, queue: str, message: str, persistent: bool = True, headers: dict | None = None):
         """Publish message to queue"""
+        if Config.LITE_MODE:
+            logger.info(f"Lite mode: billing message for queue {queue} not queued (no broker)")
+            return
         try:
             # Ensure connection is available
             if not self.connection or self.connection.is_closed:
