@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (keeps operationId and servers[].url).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import json
 import logging
 from typing import Optional, List, Dict
@@ -8,10 +10,12 @@ logging = logging.getLogger(__name__)
 class OpenApiForAI:
     """Simplified structure optimized for AI to generate API call parameters"""
 
-    def __init__(self, title: str, version: str, description: str = ""):
+    def __init__(self, title: str, version: str, description: str = "", servers: Optional[List[str]] = None):
         self.title = title
         self.version = version
         self.description = description
+        # Modified for LayerToll: keep `servers[].url` so the upstream base URL can be prefilled.
+        self.servers: List[str] = servers or []
         self.apis: List["ApiEndpoint"] = []
 
     def add_api(self, api: "ApiEndpoint"):
@@ -39,9 +43,12 @@ class ApiEndpoint:
         response_examples: Optional[Dict] = None,
         response_headers: Optional[List[Dict]] = None,
         operation_examples: Optional[Dict] = None,
+        operation_id: str = "",
     ):
         self.path = path
         self.method = method.upper()
+        # Modified for LayerToll: operationId is the best source for a valid MCP tool name.
+        self.operation_id = operation_id
         self.summary = summary
         self.description = description
         self.tags = tags or []
@@ -179,8 +186,10 @@ def convert_openapi_for_ai(openapi_str: str) -> OpenApiForAI:
         version = info.get("version", "1.0.0")
         description = info.get("description", "")
 
+        servers = [s.get("url", "") for s in openapi_data.get("servers", []) if isinstance(s, dict) and s.get("url")]
+
         # Create AI-friendly structure
-        ai_info = OpenApiForAI(title=title, version=version, description=description)
+        ai_info = OpenApiForAI(title=title, version=version, description=description, servers=servers)
 
         # Parse paths and operations
         paths = openapi_data.get("paths", {})
@@ -310,6 +319,7 @@ def convert_openapi_for_ai(openapi_str: str) -> OpenApiForAI:
                         response_examples=response_examples,
                         response_headers=response_headers if response_headers else None,
                         operation_examples=operation_examples if operation_examples else None,
+                        operation_id=operation.get("operationId", "") or "",
                     )
 
                     ai_info.add_api(api_endpoint)

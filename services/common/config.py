@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (public judge-mode path prefix).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import os
 import logging
 from dotenv import load_dotenv
@@ -73,7 +75,9 @@ class Config:
     )
     NO_AUTH_PREFIX_PATH=[
         "/uploads/",
-        "/api/common/"
+        "/api/common/",
+        # LayerToll: read-only judge mode data
+        "/api/agentpay/public/",
     ]
     MCP_SESSION_IDLE_TTL_SECONDS = int(os.getenv("MCP_SESSION_IDLE_TTL_SECONDS", 900))
     MCP_SESSION_CLEANUP_INTERVAL_SECONDS = int(os.getenv("MCP_SESSION_CLEANUP_INTERVAL_SECONDS", 60))

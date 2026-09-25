@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (valid MCP tool names, base URL from `servers`, keeps x402 prices on re-import).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 import logging
 import uuid
 import json
@@ -14,9 +16,25 @@ from services.common.models.mcp_tool_api import McpToolApi, HttpMethod
 from services.common.models.temp_mcp_service import TempMcpService, ChargeType as TempChargeType
 from services.common.models.temp_mcp_tool_api import TempMcpToolApi, HttpMethod as TempHttpMethod
 from services.admin_service.services.openapi_helper import OpenApiForAI
-from services.common.redis import redis_client 
+from services.agentpay.tool_schema import to_mcp_tool_name, unique_tool_names
+from services.common.redis import redis_client
 
 logger = logging.getLogger(__name__)
+
+
+# Added for LayerToll: MCP clients reject tool names outside [A-Za-z0-9_-]{1,64},
+# so tools are named from operationId/summary and de-duplicated per service.
+def mcp_tool_names(openapi_data: OpenApiForAI) -> List[str]:
+    return unique_tool_names(
+        [to_mcp_tool_name(getattr(api, "operation_id", ""), api.summary, api.method, api.path) for api in openapi_data.apis]
+    )
+
+
+def absolute_server_url(openapi_data: OpenApiForAI) -> str:
+    for url in getattr(openapi_data, "servers", []) or []:
+        if url.startswith(("http://", "https://")):
+            return url.rstrip("/")
+    return ""
 
 # Utility function: Convert tags string to array
 def parse_tags_to_array(tags_str: Optional[str]) -> List[str]:
@@ -134,6 +152,11 @@ class McpManagerService:
             if not temp_service:
                 raise ValueError("No temporary data found for OpenAPI update")
 
+            # LayerToll: keep per-tool x402 prices across a spec re-import (matched by tool name)
+            previous_prices = {
+                api.name: api.x402_price for api in self.mcp_tool_api_repository.get_by_service_id(service_id)
+            }
+
             # 2. Delete existing API data
             self.mcp_tool_api_repository.delete_by_service_id(service_id)
 
@@ -169,6 +192,7 @@ class McpManagerService:
                 new_api.response_headers = temp_api.response_headers
                 new_api.operation_examples = temp_api.operation_examples
                 new_api.enabled = True
+                new_api.x402_price = previous_prices.get(temp_api.name)
                 # new_api.is_deleted = temp_api.is_deleted
 
                 # Save new API record
@@ -386,7 +410,7 @@ class McpManagerService:
             mcp_service.slug_name = slug_name
             mcp_service.short_description = openapi_data.description[:255] if openapi_data.description else openapi_data.title
             mcp_service.long_description = openapi_data.description
-            mcp_service.base_url = ""  # Requires user configuration later
+            mcp_service.base_url = absolute_server_url(openapi_data)  # prefilled from `servers`, editable later
             mcp_service.headers = "[]"
             mcp_service.charge_type = ChargeType.FREE  # Default to free
             mcp_service.price = 0.0
@@ -397,12 +421,12 @@ class McpManagerService:
             self.mcp_service_repository.create(mcp_service)
 
             # Create API endpoints
-            for api in openapi_data.apis:
+            for api, tool_name in zip(openapi_data.apis, mcp_tool_names(openapi_data)):
                 tool_api = McpToolApi()
                 tool_api.id = str(uuid.uuid4())
                 tool_api.service_id = service_id
-                tool_api.name = api.summary or f"{api.method} {api.path}"
-                tool_api.description = api.description or api.summary
+                tool_api.name = tool_name
+                tool_api.description = api.description or api.summary or tool_name
                 tool_api.path = api.path
                 tool_api.method = HttpMethod(api.method)
                 tool_api.header_parameters = json.dumps(api.header_parameters) if api.header_parameters else ""
@@ -469,11 +493,11 @@ class McpManagerService:
 
             # 4. Create updated temporary API records
             temp_apis = []
-            for api in openapi_data.apis:
+            for api, tool_name in zip(openapi_data.apis, mcp_tool_names(openapi_data)):
                 temp_api = TempMcpToolApi()
                 temp_api.id = str(uuid.uuid4())
                 temp_api.service_id = service_id
-                temp_api.name = api.summary or api.path
+                temp_api.name = tool_name
                 temp_api.description = api.description or api.summary or ""
                 temp_api.path = api.path
                 temp_api.method = TempHttpMethod(api.method.upper())

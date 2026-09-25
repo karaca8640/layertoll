@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (registers the /api/agentpay router).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,6 +28,7 @@ from services.admin_service.controllers import email_test
 from services.admin_service.controllers import upload
 from services.admin_service.controllers import user_task
 from services.admin_service.controllers import resource_group
+from services.admin_service.controllers import agentpay  # LayerToll (OKX Dev Day 2026)
 
 
 
@@ -170,6 +173,7 @@ app.include_router(email_test.router, prefix="/api/email_test")
 app.include_router(upload.router, prefix="/api/upload")
 app.include_router(user_task.router, prefix="/api/onboarding")
 app.include_router(resource_group.router, prefix="/api/resource_group")
+app.include_router(agentpay.router, prefix="/api/agentpay")
 
 
 
