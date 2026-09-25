@@ -15,14 +15,15 @@ Everything after the first commit is ours; see `git log` for exact diffs and
 | 6 | `feat: add API-to-agent onboarding UI` | Agent Services console tab (default): Add API → configure tools → set pricing → publish → endpoints, listing drafts, test call. Upstream tabs kept as secondary; Stripe revenue relabelled legacy billing. |
 | 7 | `feat: add payment receipts and seller analytics` | Settlement tab (calls, paid calls, revenue, challenges, rejected proofs, price range, endpoint health, receipts with X Layer tx links + RPC confirmation); public `/judge` page from backend state with live endpoint buttons. |
 | 8 | `chore: rebrand UI as LayerToll with upstream attribution` | Name, titles, metadata, logo/favicon, About, footers credit XPack (Apache-2.0); unused partner logos removed; upstream showcase report defaulted off and labelled; ESLint 9 flat config (upstream lint config could not load). |
-| 9 | `chore: add deployment config` | Root `docker-compose.yml` building this repo, multi-stage Dockerfile, env-based start script, nginx routes for agent endpoints, `generate_env.py`, `demo_agent.py`, CI workflow; removed upstream vendor publish/installer scripts and issue templates; secret-free `.env.example`. |
-| 10 | `docs: add OKX Dev Day submission documentation` | README, BUILD_LOG, UPSTREAM, NOTICE, demo script. |
+| 9 | `fix: issues found running the full Docker stack` | Real-MySQL run exposed that the upstream migration runner splits on `;` inside comments (fixed + regression test); judge page UTF-8 header decode. |
+| 10 | `chore: add deployment config` | Root `docker-compose.yml` building this repo, multi-stage Dockerfile, env-based start script, nginx routes for agent endpoints, `generate_env.py`, `demo_agent.py`, CI workflow; removed upstream vendor publish/installer scripts and issue templates; secret-free `.env.example`. |
+| 11 | `docs: add OKX Dev Day submission documentation` | README, BUILD_LOG, UPSTREAM, NOTICE, demo script. |
 
 ## Verification done
 
 - `python -m pytest -q` — see README "Testing" for the current count; all passing at submission.
 - Frontend: `tsc --noEmit` clean, `lint:agentpay` clean, `next build` succeeds.
-- Docker Compose stack built and exercised locally (import demo API → publish → free call → 402 challenge → dashboard).
+- Docker Compose stack (MySQL 8, Redis, RabbitMQ) built and exercised locally over nginx: admin API import of the demo API → publish → free A2MCP call → 402 challenges on A2MCP and MCP (official MCP client) → forged proof rejected (fail closed, no facilitator) → `input_required` → dashboard and judge counts; `/demo-api` confirmed not publicly reachable.
 
 ## Not done (and not claimed)
 
