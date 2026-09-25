@@ -1,3 +1,5 @@
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (agent_published and payout_wallet columns).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
 from sqlalchemy import String, Enum, Numeric, Integer, DateTime
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column
@@ -35,6 +37,13 @@ class McpService(Base):
     enabled: Mapped[int] = mapped_column(Integer, nullable=True, comment="Service status: 0=disabled, 1=enabled")
     tags: Mapped[str] = mapped_column(String, nullable=True, comment="Tags")
     service_type: Mapped[str] = mapped_column(String(255), nullable=True, comment="Service type",default="openapi")
+    # Modified for LayerToll (OKX Dev Day 2026): agent-service publishing + x402 payout.
+    agent_published: Mapped[int] = mapped_column(
+        Integer, nullable=True, default=0, comment="1 = exposed on /a2mcp and /agent-mcp endpoints"
+    )
+    payout_wallet: Mapped[str] = mapped_column(
+        String(42), nullable=True, comment="X Layer address that receives x402 payments"
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=True,

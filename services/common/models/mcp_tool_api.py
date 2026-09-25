@@ -1,4 +1,6 @@
-from sqlalchemy import String, Enum, Integer, DateTime, JSON
+# NOTICE: Modified by LayerToll contributors for OKX Dev Day 2026 (x402_price column).
+# Original work: XPack MCP Marketplace, Apache-2.0, https://github.com/xpack-ai/XPack-MCP-Marketplace
+from sqlalchemy import String, Enum, Integer, DateTime, JSON, Numeric
 from sqlalchemy.sql import func
 from sqlalchemy.orm import Mapped, mapped_column
 from enum import Enum as PyEnum
@@ -42,6 +44,9 @@ class McpToolApi(Base):
     operation_examples: Mapped[str] = mapped_column(String, nullable=True, comment="API call example")
     enabled: Mapped[int] = mapped_column(Integer, nullable=False, default=1, comment="API status: 0=disabled, 1=enabled")
     is_deleted: Mapped[int] = mapped_column(Integer, nullable=False, default=0, comment="Soft delete flag: 0=active, 1=deleted")
+    # Modified for LayerToll (OKX Dev Day 2026): per-tool x402 price in USD
+    # (settled in USDT0 on X Layer). NULL or 0 = free tool.
+    x402_price: Mapped[float] = mapped_column(Numeric(18, 6), nullable=True, comment="Per-call x402 price in USD")
     created_at: Mapped[datetime] = mapped_column(
         DateTime,
         nullable=True,
