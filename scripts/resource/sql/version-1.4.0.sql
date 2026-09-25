@@ -48,6 +48,7 @@ INSERT IGNORE INTO `sys_config` (`id`,`key`, `value`,`description`,`created_at`,
   ('layertoll-platform_name', 'platform_name', 'LayerToll', 'Platform name', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('layertoll-website_title', 'website_title', 'LayerToll — sell your API to AI agents with x402 on X Layer', 'Website title', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('layertoll-headline', 'headline', 'Turn any API into a paid AI-agent service', 'Homepage headline', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
+  ('layertoll-top_navigation', 'top_navigation', '[{"title": "Judge mode (live demo)", "link": "/judge", "target": "_self"}, {"title": "GitHub", "link": "https://github.com/karaca8640/layertoll", "target": "_blank"}]', 'Top navigation', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP),
   ('layertoll-subheadline', 'subheadline', 'Import an OpenAPI spec, price each tool, and let OKX AI agents discover, call and pay per request with x402 on X Layer.', 'Homepage subheadline', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP);
 
 INSERT INTO `sys_config` (`id`,`key`, `value`,`description`,`created_at`,`updated_at`)

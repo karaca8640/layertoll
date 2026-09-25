@@ -52,6 +52,11 @@ SYS_CONFIG = {
     "platform_name": ("LayerToll", "Platform name"),
     "website_title": ("LayerToll — sell your API to AI agents with x402 on X Layer", "Website title"),
     "headline": ("Turn any API into a paid AI-agent service", "Homepage headline"),
+    "top_navigation": (
+        '[{"title": "Judge mode (live demo)", "link": "/judge", "target": "_self"}, '
+        '{"title": "GitHub", "link": "https://github.com/karaca8640/layertoll", "target": "_blank"}]',
+        "Top navigation",
+    ),
     "subheadline": (
         "Import an OpenAPI spec, price each tool, and let OKX AI agents discover, call and pay per request "
         "with x402 on X Layer.",

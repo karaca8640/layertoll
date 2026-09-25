@@ -19,6 +19,10 @@ Everything after the first commit is ours; see `git log` for exact diffs and
 | 10 | `chore: add deployment config` | Root `docker-compose.yml` building this repo, multi-stage Dockerfile, env-based start script, nginx routes for agent endpoints, `generate_env.py`, `demo_agent.py`, CI workflow; removed upstream vendor publish/installer scripts and issue templates; secret-free `.env.example`. |
 | 11 | `docs: add OKX Dev Day submission documentation` | README, BUILD_LOG, UPSTREAM, NOTICE, demo script. |
 
+| 12 | `feat: add honest test payment mode for public demos` | `AGENTPAY_PAYMENT_MODE=test`: real EIP-3009 signature/amount/payee/expiry/replay checks, never settled, no tx hash, excluded from revenue; public test-payment round trip on /judge. |
+| 13 | `feat: add lite mode for free single-container hosting` | SQLite + fakeredis + no broker, admin API and gateway in one process, Render Blueprint. |
+| 14 | `chore: deploy LayerToll public hackathon demo` | Public demo at https://layertoll.onrender.com, verified end to end from the public URL. |
+
 ## Verification done
 
 - `python -m pytest -q` — see README "Testing" for the current count; all passing at submission.
@@ -29,4 +33,5 @@ Everything after the first commit is ours; see `git log` for exact diffs and
 
 - No X Layer mainnet/testnet payment has been executed by this project; no transaction hashes are claimed.
 - OKX facilitator credentials were not configured, so the live OKX verify/settle round-trip has not been exercised (the SDK path is exercised against a local signature-verifying facilitator double in tests).
-- No OKX AI listing was submitted; no public deployment exists yet.
+- No OKX AI listing was submitted.
+- The public demo (https://layertoll.onrender.com) runs in TEST MODE on X Layer testnet: payments are verified but never settled.
