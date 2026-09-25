@@ -1,0 +1,92 @@
+import { ApiResponse } from "@/shared/types";
+import { fetchAdminAPI } from "@/rpc/admin-api";
+
+/**
+ * Admin analytics API data structures based on OpenAPI spec
+ * GET /api/admin/stats/analytics
+ */
+
+export interface DayCountStringItem {
+  stats_day: string; // yyyy-mm-dd
+  count: string;
+}
+
+export interface DayCountNumberItem {
+  stats_day: string; // yyyy-mm-dd
+  count: number;
+}
+
+// 用户注册数据
+export interface UserRegisterData {
+  total: number; // user register total count
+  today?: number; // today user register count
+  days: DayCountStringItem[]; // daily user register count
+}
+
+// user pay data
+export interface UserPayData {
+  total: number; // user pay total amount
+  today?: number; // today user pay amount
+
+  days: DayCountNumberItem[]; // daily user pay amount
+}
+
+// MCP 调用数据
+export interface MCPCallData {
+  total: number; // mcp call total count
+  today?: number; // today mcp call count
+  days: DayCountNumberItem[]; // daily mcp call count
+}
+
+// Top server items
+export interface TopServiceItem {
+  id: string; // server id
+  name: string; // server name
+  short_description: string; // short description
+  call_count: number; // call count
+  is_deleted: boolean; //It means the server was deleted.
+}
+
+// admin analytics data
+export interface AdminAnalyticsData {
+  user_register: UserRegisterData;
+  user_pay: UserPayData;
+  mcp_call: MCPCallData;
+  top_services: TopServiceItem[];
+}
+
+// admin analytics response body
+export interface AdminAnalyticsResponse
+  extends ApiResponse<AdminAnalyticsData> {
+  success: boolean;
+  code: string;
+  error_message: string;
+  data: AdminAnalyticsData;
+}
+
+/**
+ * Get admin analytics data
+ * Headers: { Authorization: string }
+ * @param start_time - Start time timestamp (seconds)
+ * @param end_time - End time timestamp (seconds)
+ */
+export async function getAdminAnalytics(
+  start_time?: number,
+  end_time?: number
+): Promise<AdminAnalyticsResponse> {
+  const params = new URLSearchParams();
+  
+  if (start_time !== undefined) {
+    params.append('start', start_time.toString());
+  }
+  
+  if (end_time !== undefined) {
+    params.append('end', end_time.toString());
+  }
+  
+  const url = `/api/admin/stats/analytics${params.toString() ? `?${params.toString()}` : ''}`;
+  
+  return fetchAdminAPI<AdminAnalyticsData>(url, {
+    method: "GET",
+  }) as unknown as AdminAnalyticsResponse;
+}
